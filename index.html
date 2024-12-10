@@ -29,44 +29,52 @@
     const database = getDatabase(app);
 
     // Create the map object
-    const map = L.map('map').setView([15.345773, -98.76587], 13); // Default view with some position
+    const map = L.map('map').setView([15.345773, -98.76587], 13); // Default view
 
     // Set up the map tiles from OpenStreetMap
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
+    // Create a custom icon for the marker (optional)
+    const customIcon = L.icon({
+      iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', // Example icon URL
+      iconSize: [38, 38] // Adjust icon size
+    });
+
     // Create a marker on the map at a given position
-    const marker = L.marker([15.345773, -98.76587]).addTo(map);
+    const marker = L.marker([15.345773, -98.76587], { icon: customIcon }).addTo(map);
 
     // Function to update the marker and map view based on new coordinates
     function updateMarker(latitude, longitude) {
-      console.log('Atualizando marcador para: ' + latitude + ', ' + longitude); // Log for debugging
+      const currentDateTime = new Date().toLocaleString(); // Get current date and time
+      console.log('Atualizando marcador para: ' + latitude + ', ' + longitude);
 
       // Update the marker position
       marker.setLatLng([latitude, longitude]);
 
       // Bind a popup with updated position and open it
-      marker.bindPopup('Posição Atualizada: ' + latitude + ', ' + longitude).openPopup();
+      marker.bindPopup('Posição Atualizada: ' + latitude + ', ' + longitude + '<br>Última atualização: ' + currentDateTime).openPopup();
 
-      // Update the map view to the new position with the same zoom level (13)
-      map.setView([latitude, longitude], 13);
+      // Update the map view to the new position without altering zoom level
+      map.setView([latitude, longitude]);
     }
 
     // Firebase listener to monitor location updates
     const positionRef = ref(database, 'localizacoes/dog1');
-    onValue(positionRef, function(snapshot) {
-      const position = snapshot.val();
-      if (position) {
+    onValue(positionRef, snapshot => {
+      if (snapshot.exists()) {
+        const position = snapshot.val();
         const latitude = position.latitude;
         const longitude = position.longitude;
-        console.log('Dados do Firebase:', position); // Log to see the data from Firebase
 
-        // Update the marker and map view based on Firebase data
+        console.log('Dados do Firebase:', position);
         updateMarker(latitude, longitude);
       } else {
-        console.log('Sem dados para dog1'); // If no data found
+        console.log('Sem dados disponíveis para dog1');
       }
+    }, error => {
+      console.error('Erro ao acessar o Firebase:', error);
     });
   </script>
 
