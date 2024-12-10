@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rastreamento de GPS</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.1/dist/leaflet.css"/>
+
+  <script src="https://unpkg.com/leaflet@1.9.1/dist/leaflet.js"></script>
+  <script type="module">
+    // Firebase configuration and initialization
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAlxDBMrFveQx1b1fTu1WMvP7qX_yFARx8",
+      authDomain: "rastreamentogps-56e5c.firebaseapp.com",
+      databaseURL: "https://rastreamentogps-56e5c-default-rtdb.firebaseio.com",
+      projectId: "rastreamentogps-56e5c",
+      storageBucket: "rastreamentogps-56e5c.firebasestorage.app",
+      messagingSenderId: "766113472501",
+      appId: "1:766113472501:web:6d73f6965215d21e28cabc",
+      measurementId: "G-6WBSE4J2YT"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    // Create the map object
+    const map = L.map('map').setView([15.345773, -98.76587], 13); // Default view with some position
+
+    // Set up the map tiles from OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Create a marker on the map at a given position
+    const marker = L.marker([15.345773, -98.76587]).addTo(map);
+
+    // Function to update the marker and map view based on new coordinates
+    function updateMarker(latitude, longitude) {
+      console.log('Atualizando marcador para: ' + latitude + ', ' + longitude); // Log for debugging
+
+      // Update the marker position
+      marker.setLatLng([latitude, longitude]);
+
+      // Bind a popup with updated position and open it
+      marker.bindPopup('Posição Atualizada: ' + latitude + ', ' + longitude).openPopup();
+
+      // Update the map view to the new position with the same zoom level (13)
+      map.setView([latitude, longitude], 13);
+    }
+
+    // Firebase listener to monitor location updates
+    const positionRef = ref(database, 'localizacoes/dog1');
+    onValue(positionRef, function(snapshot) {
+      const position = snapshot.val();
+      if (position) {
+        const latitude = position.latitude;
+        const longitude = position.longitude;
+        console.log('Dados do Firebase:', position); // Log to see the data from Firebase
+
+        // Update the marker and map view based on Firebase data
+        updateMarker(latitude, longitude);
+      } else {
+        console.log('Sem dados para dog1'); // If no data found
+      }
+    });
+  </script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+    #map {
+      height: 100vh; /* Full screen map */
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+</body>
+</html>
