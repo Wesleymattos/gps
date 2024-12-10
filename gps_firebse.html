@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rastreamento de GPS</title>
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Importando as bibliotecas do Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+    // Configuração do Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyAlxDBMrFveQx1b1fTu1WMvP7qX_yFARx8",
+      authDomain: "rastreamentogps-56e5c.firebaseapp.com",
+      databaseURL: "https://rastreamentogps-56e5c-default-rtdb.firebaseio.com",
+      projectId: "rastreamentogps-56e5c",
+      storageBucket: "rastreamentogps-56e5c.firebasestorage.app",
+      messagingSenderId: "766113472501",
+      appId: "1:766113472501:web:6d73f6965215d21e28cabc",
+      measurementId: "G-6WBSE4J2YT"
+    };
+
+    // Inicializando o Firebase
+    const app = initializeApp(firebaseConfig);
+
+    // Conectando ao Realtime Database
+    const database = getDatabase(app);
+
+    // Função para configurar o monitoramento dos dados
+    function monitorarDados() {
+      // Referência ao nó no banco de dados
+      const referencia = ref(database, "localizacoes/dog1");
+
+      // Escutando mudanças em tempo real
+      onValue(referencia, (snapshot) => {
+        const dados = snapshot.val();
+        if (dados) {
+          // Atualizando os elementos HTML com os dados recebidos
+          document.getElementById("latitude").textContent = dados.latitude || "Não disponível";
+          document.getElementById("longitude").textContent = dados.longitude || "Não disponível";
+          document.getElementById("timestamp").textContent = dados.timestamp || "Não disponível";
+        } else {
+          // Mensagem de erro caso os dados não estejam disponíveis
+          document.getElementById("latitude").textContent = "Sem dados";
+          document.getElementById("longitude").textContent = "Sem dados";
+          document.getElementById("timestamp").textContent = "Sem dados";
+        }
+      }, (error) => {
+        console.error("Erro ao acessar os dados:", error);
+      });
+    }
+
+    // Chamando a função ao carregar a página
+    window.onload = monitorarDados;
+  </script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+
+    h1 {
+      font-size: 24px;
+    }
+
+    .data-display {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      display: inline-block;
+      box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .data-display p {
+      font-size: 18px;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Rastreamento de GPS</h1>
+  <div class="data-display">
+    <p><strong>Latitude:</strong> <span id="latitude">Carregando...</span></p>
+    <p><strong>Longitude:</strong> <span id="longitude">Carregando...</span></p>
+    <p><strong>Timestamp:</strong> <span id="timestamp">Carregando...</span></p>
+  </div>
+</body>
+</html>
